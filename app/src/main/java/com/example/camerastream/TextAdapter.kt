@@ -95,7 +95,7 @@ class TextAdapter(
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
         })
-        holder.textPositionX.addTextChangedListener(holder.positionYTextWatcher)
+        holder.textPositionY.addTextChangedListener(holder.positionYTextWatcher)
     }
 
     fun loadNewData(newTexts: ArrayList<Text>){

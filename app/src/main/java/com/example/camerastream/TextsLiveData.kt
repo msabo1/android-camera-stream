@@ -35,13 +35,13 @@ object TextsLiveData {
 
     fun setTextPositionX(position: Int, positionX: String){
         if(textsMutable.value?.get(position) != null){
-            textsMutable.value?.get(position)?.positionX = positionX.toFloat()
+            textsMutable.value?.get(position)?.positionX = if(positionX != null) positionX.toFloat() else 0f
         }
     }
 
     fun setTextPositionY(position: Int, positionY: String){
         if(textsMutable.value?.get(position) != null){
-            textsMutable.value?.get(position)?.positionY = positionY.toFloat()
+            textsMutable.value?.get(position)?.positionY = if(positionY != null) positionY.toFloat() else 0f
         }
     }
 

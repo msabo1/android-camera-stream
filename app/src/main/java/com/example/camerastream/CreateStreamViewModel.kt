@@ -64,7 +64,9 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
         command = command + "-s 360x640 -bufsize 2048k -vb 400k -maxrate 800k -f flv "
         command = command + "-vf \""
         for(text in TextsLiveData.textsArrayList!!){
-            command = command + "drawtext=fontfile="+ fontFile + ": fontsize=96: fontcolor=white: x=(w-text_w)*" + text.positionX + ": y=(h-text_h)*" + text.positionY + ": textfile=" + """${getApplication<Application>().filesDir}${text.id}.txt""" +":reload=1, "
+            val positionX = if(text.positionX != null) text.positionX!!/100 else 0
+            val positionY = if(text.positionY != null) text.positionY!!/100 else 0
+            command = command + "drawtext=fontfile="+ fontFile + ": fontsize=96: fontcolor=white: x=(w-text_w)*" + positionX + ": y=(h-text_h)*" + positionY + ": textfile=" + """${getApplication<Application>().filesDir}${text.id}.txt""" +":reload=1, "
         }
         //Delete trail comma and space
         command = command.substring(0, command.length - 2)
