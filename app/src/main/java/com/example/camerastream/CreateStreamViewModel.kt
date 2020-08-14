@@ -8,13 +8,8 @@ import com.arthenica.mobileffmpeg.FFmpeg
 import java.io.File
 
 class CreateStreamViewModel(application: Application): AndroidViewModel(application) {
-    private val streamUrlMutalbe: MutableLiveData<String> = MutableLiveData<String>()
-    val streamUrl: LiveData<String>
-        get() = streamUrlMutalbe
-
-    fun setStreamUrl(url: String){
-        streamUrlMutalbe.value = url
-    }
+    var streamUrl: String? = null
+    var camera: Int? = 0
 
     fun addText(){
         val text: Text = Text(System.currentTimeMillis())
@@ -23,8 +18,7 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
 
     fun startStream(){
         createTextFiles()
-
-        val executionId = FFmpeg.executeAsync(generateFFmpegCommand()) { executionId, rc ->
+        ExecutionData.executionId = FFmpeg.executeAsync(generateFFmpegCommand()) { executionId, rc ->
             if (rc == Config.RETURN_CODE_SUCCESS) {
                 Log.i(Config.TAG, "Async command execution completed successfully.")
             } else if (rc == Config.RETURN_CODE_CANCEL) {
@@ -33,7 +27,6 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
                 Log.i(Config.TAG, String.format("Async command execution failed with rc=%d.", rc))
             }
         }
-
     }
 
     private fun createTextFiles(){
@@ -51,7 +44,7 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
         val fontFile: File = File("""${getApplication<Application>().cacheDir}font.tff""")
         FilesUtil.rawResourceToFile(getApplication<Application>(), R.raw.doppioone_regular, fontFile)
 
-        var command: String = "-video_size hd720 -f android_camera -camera_index 1 -i anything "
+        var command: String = "-video_size hd720 -f android_camera -camera_index " +  camera + " -i anything "
 
         //Add dummy audio track
         command += "-f lavfi -i anullsrc -r 10 -y -c:v libx264 -c:a mp3 "
@@ -61,13 +54,13 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
         for(text in TextsLiveData.textsArrayList!!){
             val positionX = if(text.positionX != null) text.positionX!!/100 else 0
             val positionY = if(text.positionY != null) text.positionY!!/100 else 0
-            command += "drawtext=fontfile="+ fontFile + ": fontsize=96: fontcolor=white: x=(w-text_w)*" + positionX + ": y=(h-text_h)*" + positionY + ": textfile=" + """${getApplication<Application>().filesDir}${text.id}.txt""" +":reload=1, "
+            command += "drawtext=fontfile="+ fontFile + ": fontsize=96: fontcolor=white: x=(w-text_w)*" + positionX + ": y=(h-text_h)*" + positionY + ": textfile=" + """${getApplication<Application>().filesDir}/${text.id}.txt""" +":reload=1, "
         }
         //Delete trail comma and space
         command = command.substring(0, command.length - 2)
 
         command += "\" "
-        command += streamUrl.value
+        command += streamUrl
 
         Log.i("mojtag", command)
         return command

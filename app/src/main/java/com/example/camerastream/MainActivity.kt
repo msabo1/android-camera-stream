@@ -5,9 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
@@ -18,28 +15,30 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val cameraIdMap = mapOf(backCameraRadioButton.id to 0, 0 to backCameraRadioButton.id, frontCameraRadioButton.id to 1, 1 to frontCameraRadioButton.id)
+
         val viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.application)).get<CreateStreamViewModel>(CreateStreamViewModel::class.java)
 
-        streamUrl.setText(viewModel.streamUrl)
-        if(viewModel.camera != null){
-            cameraSpinner.setSelection(viewModel.camera!!)
+        streamUrlEditText.setText(viewModel.streamUrl)
+
+        if(viewModel.camera != null && cameraIdMap[viewModel.camera!!] != null){
+            cameraRadioGroup.check(cameraIdMap[viewModel.camera!!]!!)
         }
 
-
-        val cameraAdapter: ArrayAdapter<CharSequence> = ArrayAdapter.createFromResource(this, R.array.camera_options, android.R.layout.simple_spinner_item)
-        cameraAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        cameraSpinner.adapter = cameraAdapter
-
-        cameraSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                viewModel.camera = 0
+        frontCameraRadioButton.setOnCheckedChangeListener { buttonView, isChecked ->
+            if(isChecked){
+                viewModel.camera = cameraIdMap[frontCameraRadioButton.id]
+                backCameraRadioButton.isChecked = false
             }
-
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                viewModel.camera = position
+        }
+        backCameraRadioButton.setOnCheckedChangeListener { buttonView, isChecked ->
+            if(isChecked){
+                viewModel.camera = cameraIdMap[backCameraRadioButton.id]
+                frontCameraRadioButton.isChecked = false
             }
         }
 
@@ -56,7 +55,7 @@ class MainActivity : AppCompatActivity() {
             viewModel.addText()
         }
 
-        streamUrl.addTextChangedListener(object: TextWatcher{
+        streamUrlEditText.addTextChangedListener(object: TextWatcher{
             override fun afterTextChanged(s: Editable?) {
                 viewModel.streamUrl = s.toString()
             }

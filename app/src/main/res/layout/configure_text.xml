@@ -20,8 +20,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <EditText
-                android:id="@+id/textPositionY"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textPositionYLayout"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
@@ -29,13 +29,20 @@
                 android:layout_marginBottom="8dp"
                 android:ems="10"
                 android:hint="Position y"
+                app:helperText="0-100"
                 android:inputType="numberDecimal"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/textPositionX"
-                app:layout_constraintTop_toBottomOf="@+id/configureTextTextEditText" />
+                app:layout_constraintStart_toEndOf="@+id/textPositionXLayout"
+                app:layout_constraintTop_toBottomOf="@+id/configureTextTextLayout" >
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textPositionYEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                     />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/textPositionX"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textPositionXLayout"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
@@ -43,15 +50,21 @@
                 android:layout_marginBottom="8dp"
                 android:ems="10"
                 android:hint="Position x"
+                app:helperText="0-100"
                 android:inputType="numberDecimal"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/configureTextTextEditText" />
+                app:layout_constraintTop_toBottomOf="@+id/configureTextTextLayout" >
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textPositionXEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/textLabelEditText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textLabelLayout"
+                android:layout_width="200dp"
+                android:layout_height="match_parent"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
                 android:ems="10"
@@ -60,21 +73,46 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:layout_conversion_absoluteHeight="45dp"
-                tools:layout_conversion_absoluteWidth="210dp" />
+                tools:layout_conversion_absoluteWidth="210dp" >
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textLabelEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/configureTextTextEditText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/configureTextTextLayout"
+                android:layout_width="200dp"
+                android:layout_height="match_parent"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:ems="10"
                 android:hint="Text"
                 android:inputType="text"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textLabelEditText"
+                app:layout_constraintTop_toBottomOf="@+id/textLabelLayout"
                 tools:layout_conversion_absoluteHeight="45dp"
-                tools:layout_conversion_absoluteWidth="210dp" />
+                tools:layout_conversion_absoluteWidth="210dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/configureTextTextEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <ImageButton
+                android:id="@+id/deleteButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/configureTextTextLayout"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_delete_black_24dp"
+                style="@style/Widget.MaterialComponents.Button.TextButton"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
