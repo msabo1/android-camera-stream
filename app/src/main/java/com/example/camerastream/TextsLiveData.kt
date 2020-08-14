@@ -20,6 +20,15 @@ object TextsLiveData {
 
     }
 
+    fun deleteText(position: Int){
+        if(textsMutable.value != null){
+            if(textsMutable.value?.get(position) != null){
+                textsMutable.value?.removeAt(position)
+                textsMutable.value = textsMutable.value
+            }
+        }
+    }
+
     fun setTextLabel(position: Int, label: String){
         if(textsMutable.value?.get(position) != null){
             textsMutable.value?.get(position)?.label = label

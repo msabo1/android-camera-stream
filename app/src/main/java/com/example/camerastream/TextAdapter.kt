@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageButton
 import androidx.recyclerview.widget.RecyclerView
 
 class TextViewHolder(view: View): RecyclerView.ViewHolder(view) {
@@ -13,6 +14,7 @@ class TextViewHolder(view: View): RecyclerView.ViewHolder(view) {
     val textText: EditText = view.findViewById(R.id.configureTextTextEditText)
     val textPositionX: EditText = view.findViewById(R.id.textPositionX)
     val textPositionY: EditText = view.findViewById(R.id.textPositionY)
+    val deleteButton: ImageButton = view.findViewById(R.id.deleteButton)
 
     var labelTextWatcher: TextWatcher? = null
     var textTextWatcher: TextWatcher? = null
@@ -25,7 +27,8 @@ class TextAdapter(
     private val afterLabelChanged: (Int, String) -> Unit,
     private val afterTextChanged: (Int, String) -> Unit,
     private val afterPositionXChanged: (Int, String) -> Unit,
-    private val afterPositionYChanged: (Int, String) -> Unit
+    private val afterPositionYChanged: (Int, String) -> Unit,
+    private val onDeleteClicked: (Int) -> Unit
 ): RecyclerView.Adapter<TextViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TextViewHolder {
@@ -96,6 +99,8 @@ class TextAdapter(
 
         })
         holder.textPositionY.addTextChangedListener(holder.positionYTextWatcher)
+
+        holder.deleteButton.setOnClickListener { onDeleteClicked(position) }
     }
 
     fun loadNewData(newTexts: ArrayList<Text>){
