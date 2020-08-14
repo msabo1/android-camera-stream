@@ -1,9 +1,7 @@
 package com.example.camerastream
 
-import android.app.Application
 import android.content.Context
 import android.util.Log
-import com.arthenica.mobileffmpeg.Config
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -34,6 +32,8 @@ class FilesUtil {
         }
 
         fun stringToFile(string: String, file: File){
+            Log.i("mojtag", string)
+            Log.i("mojtag", file.toString())
             val outputStream = FileOutputStream(file)
             try {
                 outputStream.write(string.toByteArray())

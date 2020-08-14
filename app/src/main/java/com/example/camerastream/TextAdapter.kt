@@ -9,8 +9,8 @@ import android.widget.EditText
 import androidx.recyclerview.widget.RecyclerView
 
 class TextViewHolder(view: View): RecyclerView.ViewHolder(view) {
-    val textLabel: EditText = view.findViewById(R.id.textLabel)
-    val textText: EditText = view.findViewById(R.id.textText)
+    val textLabel: EditText = view.findViewById(R.id.textLabelEditText)
+    val textText: EditText = view.findViewById(R.id.configureTextTextEditText)
     val textPositionX: EditText = view.findViewById(R.id.textPositionX)
     val textPositionY: EditText = view.findViewById(R.id.textPositionY)
 

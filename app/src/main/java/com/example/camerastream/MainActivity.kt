@@ -1,6 +1,7 @@
 package com.example.camerastream
 
 import android.Manifest
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -55,6 +56,10 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, arrayOf<String>(Manifest.permission.CAMERA), 1);
 
             viewModel.startStream()
+
+            val intent = Intent(this, StreamActivity::class.java)
+            startActivity(intent)
+
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.example.camerastream
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
@@ -35,13 +34,13 @@ object TextsLiveData {
 
     fun setTextPositionX(position: Int, positionX: String){
         if(textsMutable.value?.get(position) != null){
-            textsMutable.value?.get(position)?.positionX = if(positionX != null) positionX.toFloat() else 0f
+            textsMutable.value?.get(position)?.positionX = if(positionX != null && positionX.isNotEmpty()) positionX.toFloat() else 0f
         }
     }
 
     fun setTextPositionY(position: Int, positionY: String){
         if(textsMutable.value?.get(position) != null){
-            textsMutable.value?.get(position)?.positionY = if(positionY != null) positionY.toFloat() else 0f
+            textsMutable.value?.get(position)?.positionY = if(positionY != null && positionY.isNotEmpty()) positionY.toFloat() else 0f
         }
     }
 
