@@ -34,11 +34,12 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/textPositionXLayout"
                 app:layout_constraintTop_toBottomOf="@+id/configureTextTextLayout" >
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/textPositionYEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                     />
+                    android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -55,10 +56,12 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/configureTextTextLayout" >
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/textPositionXEditText"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -74,10 +77,12 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tools:layout_conversion_absoluteHeight="45dp"
                 tools:layout_conversion_absoluteWidth="210dp" >
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/textLabelEditText"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -97,7 +102,8 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/configureTextTextEditText"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:singleLine="true" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
