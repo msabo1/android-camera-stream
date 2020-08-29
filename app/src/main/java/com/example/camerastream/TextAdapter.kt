@@ -73,10 +73,15 @@ class TextAdapter(
         holder.textText.addTextChangedListener(holder.textTextWatcher)
 
         holder.textPositionX.removeTextChangedListener(holder.positionXTextWatcher)
-        holder.textPositionX.setText(text.positionX.toString())
+        holder.textPositionX.setText(text.positionX?.toString())
         holder.positionXTextWatcher = (object: TextWatcher{
             override fun afterTextChanged(s: Editable?) {
-                afterPositionXChanged(position, s.toString())
+                if (!s?.toString().isNullOrEmpty() && s!!.toString().toFloat() > 100f){
+                    holder.textPositionX.setText("100")
+                    afterPositionXChanged(position, "100")
+                }else{
+                    afterPositionXChanged(position, s.toString())
+                }
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -87,10 +92,15 @@ class TextAdapter(
         holder.textPositionX.addTextChangedListener(holder.positionXTextWatcher)
 
         holder.textPositionY.removeTextChangedListener(holder.positionYTextWatcher)
-        holder.textPositionY.setText(text.positionY.toString())
+        holder.textPositionY.setText(text.positionY?.toString())
         holder.positionYTextWatcher = (object: TextWatcher{
             override fun afterTextChanged(s: Editable?) {
-                afterPositionYChanged(position, s.toString())
+                if (!s?.toString().isNullOrEmpty() && s!!.toString().toFloat() > 100f){
+                    holder.textPositionY.setText("100")
+                    afterPositionYChanged(position, "100")
+                }else{
+                    afterPositionYChanged(position, s.toString())
+                }
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}

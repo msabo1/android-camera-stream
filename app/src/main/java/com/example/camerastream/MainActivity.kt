@@ -2,9 +2,11 @@ package com.example.camerastream
 
 import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
@@ -12,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
 
+const val CAMERA_PERMISSION_REQUEST: Int = 543
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,11 +26,21 @@ class MainActivity : AppCompatActivity() {
 
         val viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.application)).get<CreateStreamViewModel>(CreateStreamViewModel::class.java)
 
-        streamUrlEditText.setText(viewModel.streamUrl)
+        streamUrlEditText.setText(viewModel.streamUrl.value)
+
+        viewModel.streamUrl.observe(this, Observer {url: String ->
+            if(url.isNullOrEmpty()){
+                streamUrlEditText.error = "Stream URL is required!"
+            }
+            startStreamingButton.isEnabled = !url.isNullOrEmpty()
+        })
 
         if(viewModel.camera != null && cameraIdMap[viewModel.camera!!] != null){
             cameraRadioGroup.check(cameraIdMap[viewModel.camera!!]!!)
         }
+
+        streamUrlEditText.error = "Stream URL is required!"
+        startStreamingButton.isEnabled = false
 
         frontCameraRadioButton.setOnCheckedChangeListener { buttonView, isChecked ->
             if(isChecked){
@@ -57,7 +70,7 @@ class MainActivity : AppCompatActivity() {
 
         streamUrlEditText.addTextChangedListener(object: TextWatcher{
             override fun afterTextChanged(s: Editable?) {
-                viewModel.streamUrl = s.toString()
+                viewModel.changeStreamUrl(s.toString())
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -69,13 +82,34 @@ class MainActivity : AppCompatActivity() {
         })
 
         startStreamingButton.setOnClickListener{
-            ActivityCompat.requestPermissions(this, arrayOf<String>(Manifest.permission.CAMERA), 1);
+            val permission: Int = ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            )
+            if(permission != PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.requestPermissions(this, arrayOf<String>(Manifest.permission.CAMERA), CAMERA_PERMISSION_REQUEST);
+            }else{
+                viewModel.startStream()
+                val intent = Intent(this, StreamActivity::class.java)
+                startActivity(intent)
+            }
 
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        val viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.application)).get<CreateStreamViewModel>(CreateStreamViewModel::class.java)
+        if(grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
             viewModel.startStream()
-
             val intent = Intent(this, StreamActivity::class.java)
             startActivity(intent)
-
+        }else{
+            Toast.makeText(this,"Application needs permission to access camera!", Toast.LENGTH_SHORT).show()
         }
     }
 }

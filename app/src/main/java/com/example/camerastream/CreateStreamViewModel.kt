@@ -8,8 +8,14 @@ import com.arthenica.mobileffmpeg.FFmpeg
 import java.io.File
 
 class CreateStreamViewModel(application: Application): AndroidViewModel(application) {
-    var streamUrl: String? = null
+    private val streamUrlMutable: MutableLiveData<String> = MutableLiveData<String>()
+    val streamUrl: LiveData<String>
+        get() = streamUrlMutable
     var camera: Int? = 0
+
+    fun changeStreamUrl(url: String){
+        streamUrlMutable.value = url;
+    }
 
     fun addText(){
         val text: Text = Text(System.currentTimeMillis())
@@ -17,6 +23,7 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
     }
 
     fun startStream(){
+        ExecutionData.setIsTerminated(false);
         createTextFiles()
         ExecutionData.executionId = FFmpeg.executeAsync(generateFFmpegCommand()) { executionId, rc ->
             if (rc == Config.RETURN_CODE_SUCCESS) {
@@ -25,6 +32,7 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
                 Log.i(Config.TAG, "Async command execution cancelled by user.")
             } else {
                 Log.i(Config.TAG, String.format("Async command execution failed with rc=%d.", rc))
+                ExecutionData.setIsTerminated(true)
             }
         }
     }
@@ -51,16 +59,18 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
 
         command += "-s 360x640 -bufsize 2048k -vb 400k -maxrate 800k -f flv "
         command += "-vf \""
-        for(text in TextsLiveData.textsArrayList!!){
-            val positionX = if(text.positionX != null) text.positionX!!/100 else 0
-            val positionY = if(text.positionY != null) text.positionY!!/100 else 0
-            command += "drawtext=fontfile="+ fontFile + ": fontsize=96: fontcolor=white: x=(w-text_w)*" + positionX + ": y=(h-text_h)*" + positionY + ": textfile=" + """${getApplication<Application>().filesDir}/${text.id}.txt""" +":reload=1, "
+        TextsLiveData.textsArrayList?.let { list ->
+            for(text in list){
+                val positionX = if(text.positionX != null) text.positionX!!/100 else 0
+                val positionY = if(text.positionY != null) text.positionY!!/100 else 0
+                command += "drawtext=fontfile="+ fontFile + ": fontsize=96: fontcolor=white: x=(w-text_w)*" + positionX + ": y=(h-text_h)*" + positionY + ": textfile=" + """${getApplication<Application>().filesDir}/${text.id}.txt""" +":reload=1, "
+            }
         }
         //Delete trail comma and space
         command = command.substring(0, command.length - 2)
 
         command += "\" "
-        command += streamUrl
+        command += streamUrl.value
 
         Log.i("mojtag", command)
         return command

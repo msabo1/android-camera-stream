@@ -2,6 +2,7 @@ package com.example.camerastream
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -20,6 +21,13 @@ class StreamActivity : AppCompatActivity() {
         ).get<StreamViewModel>(
             StreamViewModel::class.java
         )
+
+        ExecutionData.isTerminated.observe(this, Observer { isTerminated ->
+            if(isTerminated){
+                Toast.makeText(this, "Stream could not be started!", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        })
 
         val updateTextAdapter: UpdateTextAdapter = UpdateTextAdapter(ArrayList(), viewModel::updateText)
         updateTextList.adapter = updateTextAdapter

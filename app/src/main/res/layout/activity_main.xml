@@ -18,12 +18,14 @@
         android:inputType="textUri|text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" >
+        app:layout_constraintTop_toTopOf="parent"
+        app:errorEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/streamUrlEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:inputType="textUri"
             android:singleLine="true" />
     </com.google.android.material.textfield.TextInputLayout>
 
