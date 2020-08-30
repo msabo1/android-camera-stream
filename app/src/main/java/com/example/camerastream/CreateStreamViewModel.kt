@@ -55,22 +55,25 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
         var command: String = "-video_size hd720 -f android_camera -camera_index " +  camera + " -i anything "
 
         //Add dummy audio track
-        command += "-f lavfi -i anullsrc -r 10 -y -c:v libx264 -c:a mp3 "
+        command += "-f lavfi -i anullsrc "
 
-        command += "-s 360x640 -bufsize 2048k -vb 400k -maxrate 800k -f flv "
-        command += "-vf \""
+        command += "-flags +global_header -c:v libx264 -c:a aac -b:v 1000k -maxrate 1000k -bufsize 2000k -g 50 "
+
         TextsLiveData.textsArrayList?.let { list ->
+            command += "-vf \""
             for(text in list){
                 val positionX = if(text.positionX != null) text.positionX!!/100 else 0
                 val positionY = if(text.positionY != null) text.positionY!!/100 else 0
                 command += "drawtext=fontfile="+ fontFile + ": fontsize=96: fontcolor=white: x=(w-text_w)*" + positionX + ": y=(h-text_h)*" + positionY + ": textfile=" + """${getApplication<Application>().filesDir}/${text.id}.txt""" +":reload=1, "
             }
+            //Delete trail comma and space
+            command = command.substring(0, command.length - 2)
+            command += "\" "
         }
-        //Delete trail comma and space
-        command = command.substring(0, command.length - 2)
 
-        command += "\" "
+        command += "-s 258x458 -preset ultrafast -r 10 -f tee -map 0:v -map 1:a \"[f=flv]"
         command += streamUrl.value
+        command += "|[f=mpegts]udp://127.0.0.1:1234\""
 
         Log.i("mojtag", command)
         return command
