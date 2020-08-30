@@ -51,7 +51,7 @@ class StreamActivity : AppCompatActivity() {
 
         ExecutionData.isTerminated.observe(this, Observer { isTerminated ->
             if(isTerminated){
-                Toast.makeText(this, "Stream could not be started!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Stream could not be started! Check your stream URL and internet connection!", Toast.LENGTH_LONG).show()
                 finish()
             }
         })
