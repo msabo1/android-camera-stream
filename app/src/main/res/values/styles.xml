@@ -11,5 +11,8 @@
     <style name="Widget.SecondaryButtonIcon" parent="Widget.MaterialComponents.Button.Icon">
         <item name="backgroundTint">?attr/colorSecondary</item>
     </style>
+    <style name="Widget.SecondaryButtonVariant" parent="Widget.MaterialComponents.Button.Icon">
+        <item name="backgroundTint">?attr/colorSecondaryVariant</item>
+    </style>
 
 </resources>

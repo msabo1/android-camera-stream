@@ -1,11 +1,13 @@
 package com.example.camerastream
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -14,9 +16,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
 
-const val CAMERA_PERMISSION_REQUEST: Int = 543
+const val CAMERA_PERMISSION_START_STREAM_REQUEST: Int = 543
+const val CAMERA_PERMISSION_QR_REQUEST: Int = 542
+const val QR_CODE_REQUEST: Int = 544
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var viewModel: CreateStreamViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -24,14 +29,12 @@ class MainActivity : AppCompatActivity() {
 
         val cameraIdMap = mapOf(backCameraRadioButton.id to 0, 0 to backCameraRadioButton.id, frontCameraRadioButton.id to 1, 1 to frontCameraRadioButton.id)
 
-        val viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.application)).get<CreateStreamViewModel>(CreateStreamViewModel::class.java)
+        viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.application)).get<CreateStreamViewModel>(CreateStreamViewModel::class.java)
 
         streamUrlEditText.setText(viewModel.streamUrl.value)
 
         viewModel.streamUrl.observe(this, Observer {url: String ->
-            if(url.isNullOrEmpty()){
-                streamUrlEditText.error = "Stream URL is required!"
-            }
+            streamUrlEditText.error = if(url.isNullOrEmpty()) "Stream URL is required!" else null
             startStreamingButton.isEnabled = !url.isNullOrEmpty()
         })
 
@@ -87,13 +90,25 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.CAMERA
             )
             if(permission != PackageManager.PERMISSION_GRANTED){
-                ActivityCompat.requestPermissions(this, arrayOf<String>(Manifest.permission.CAMERA), CAMERA_PERMISSION_REQUEST);
+                ActivityCompat.requestPermissions(this, arrayOf<String>(Manifest.permission.CAMERA), CAMERA_PERMISSION_START_STREAM_REQUEST);
             }else{
                 viewModel.startStream()
                 val intent = Intent(this, StreamActivity::class.java)
                 startActivity(intent)
             }
+        }
 
+        scanQrButton.setOnClickListener {
+            val permission: Int = ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            )
+            if(permission != PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.requestPermissions(this, arrayOf<String>(Manifest.permission.CAMERA), CAMERA_PERMISSION_QR_REQUEST);
+            }else{
+                val intent = Intent(this, ScanQRActivity::class.java)
+                startActivityForResult(intent, QR_CODE_REQUEST)
+            }
         }
     }
 
@@ -103,13 +118,25 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        val viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.application)).get<CreateStreamViewModel>(CreateStreamViewModel::class.java)
         if(grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-            viewModel.startStream()
-            val intent = Intent(this, StreamActivity::class.java)
-            startActivity(intent)
-        }else{
+            if(requestCode == CAMERA_PERMISSION_START_STREAM_REQUEST){
+                viewModel.startStream()
+                val intent = Intent(this, StreamActivity::class.java)
+                startActivity(intent)
+            }
+            if(requestCode == CAMERA_PERMISSION_QR_REQUEST){
+                val intent = Intent(this, ScanQRActivity::class.java)
+                startActivityForResult(intent, QR_CODE_REQUEST)
+            }
+        } else{
             Toast.makeText(this,"Application needs permission to access camera!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode == QR_CODE_REQUEST && resultCode == Activity.RESULT_OK){
+            streamUrlEditText.setText(data?.getStringExtra("streamURL"))
         }
     }
 }

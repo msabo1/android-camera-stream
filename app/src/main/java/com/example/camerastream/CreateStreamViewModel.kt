@@ -43,6 +43,8 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
                 val file: File = File(getApplication<Application>().filesDir, """${text.id}.txt""")
                 if(text.text != null){
                     FilesUtil.stringToFile(text.text!!, file)
+                }else{
+                    FilesUtil.stringToFile("", file)
                 }
             }
         }
