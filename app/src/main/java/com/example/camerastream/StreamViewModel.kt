@@ -6,6 +6,9 @@ import com.arthenica.mobileffmpeg.FFmpeg
 import java.io.File
 
 class StreamViewModel(application: Application): AndroidViewModel(application) {
+    private val isFullscreenMutable: MutableLiveData<Boolean> = MutableLiveData<Boolean>()
+    val isFullscreen: LiveData<Boolean>
+        get() = isFullscreenMutable
 
     fun updateText(position: Int, text: String){
         TextsLiveData.setTextText(position, text)
@@ -19,7 +22,10 @@ class StreamViewModel(application: Application): AndroidViewModel(application) {
         if(ExecutionData.executionId != null){
             FFmpeg.cancel(ExecutionData.executionId!!)
         }
+    }
 
+    fun setIsFullscreen(fullscreen: Boolean){
+        isFullscreenMutable.value = fullscreen
     }
 
 }
