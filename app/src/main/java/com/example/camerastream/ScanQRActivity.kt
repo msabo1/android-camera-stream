@@ -2,15 +2,10 @@ package com.example.camerastream
 
 import android.app.Activity
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
-import androidx.lifecycle.ViewModelProvider
-import com.budiyev.android.codescanner.AutoFocusMode
-import com.budiyev.android.codescanner.CodeScanner
-import com.budiyev.android.codescanner.DecodeCallback
-import com.budiyev.android.codescanner.ErrorCallback
-import com.budiyev.android.codescanner.ScanMode
+import androidx.appcompat.app.AppCompatActivity
+import com.budiyev.android.codescanner.*
 import kotlinx.android.synthetic.main.activity_scan_qr.*
 
 class ScanQRActivity : AppCompatActivity() {
