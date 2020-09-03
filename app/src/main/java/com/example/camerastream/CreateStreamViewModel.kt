@@ -59,7 +59,7 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
         //Add dummy audio track
         command += "-f lavfi -i anullsrc "
 
-        command += "-flags +global_header -c:v libx264 -c:a aac -b:v 1000k -maxrate 1000k -bufsize 2000k -g 50 "
+        command += "-flags +global_header -c:v libx264 -c:a aac -b:v 400k -maxrate 4M -bufsize 200k -g 20 -tune zerolatency -probesize 32 -movflags faststart "
 
         TextsLiveData.textsArrayList?.let { list ->
             command += "-vf \""
