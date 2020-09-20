@@ -22,6 +22,7 @@ class StreamViewModel(application: Application): AndroidViewModel(application) {
         if(ExecutionData.executionId != null){
             FFmpeg.cancel(ExecutionData.executionId!!)
         }
+        ExecutionData.setIsStarted(false)
     }
 
     fun setIsFullscreen(fullscreen: Boolean){
