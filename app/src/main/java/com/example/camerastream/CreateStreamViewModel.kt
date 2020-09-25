@@ -59,7 +59,7 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
         //Add dummy audio track
         command += "-f lavfi -i anullsrc "
 
-        command += "-flags +global_header -c:v libx264 -c:a aac -b:v 400k -maxrate 4M -bufsize 200k -g 20 -tune zerolatency -probesize 32 -movflags faststart "
+        command += "-flags +global_header -c:v libx264 -c:a aac -b:v 400k -maxrate 4M -bufsize 200k -tune zerolatency -probesize 32 -movflags faststart "
 
         TextsLiveData.textsArrayList?.let { list ->
             command += "-vf \""
@@ -73,7 +73,7 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
             command += "\" "
         }
 
-        command += "-s 258x458 -preset ultrafast -r 10 -f tee -map 0:v -map 1:a \"[f=flv]"
+        command += " -r 10 -f tee -map 0:v -map 1:a \"[f=flv]"
         command += streamUrl.value
         command += "|[f=mpegts]udp://127.0.0.1:1234\""
 
