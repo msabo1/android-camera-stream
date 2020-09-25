@@ -1,11 +1,6 @@
 package com.example.camerastream
-import android.content.Context
-import android.hardware.camera2.*
+import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.HandlerThread
-import android.util.Log
-import android.view.SurfaceHolder
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
@@ -14,113 +9,33 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.exoplayer2.DefaultLoadControl
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Player.STATE_READY
+import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.extractor.ExtractorsFactory
+import com.google.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory
+import com.google.android.exoplayer2.extractor.ts.TsExtractor
+import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.upstream.UdpDataSource
+import com.google.android.exoplayer2.util.TimestampAdjuster
 import kotlinx.android.synthetic.main.activity_stream.*
 
 
 class StreamActivity : AppCompatActivity() {
     private  lateinit var viewModel: StreamViewModel
-
-    private lateinit var captureSession: CameraCaptureSession
-    private lateinit var captureRequestBuilder: CaptureRequest.Builder
-
-    private lateinit var cameraDevice: CameraDevice
-    private val deviceStateCallback = object: CameraDevice.StateCallback() {
-        override fun onOpened(camera: CameraDevice) {
-            if (camera != null){
-                cameraDevice = camera
-                previewSession()
-            }
-        }
-        override fun onDisconnected(camera: CameraDevice) {
-            camera.close()
-        }
-        override fun onError(camera: CameraDevice, error: Int) {
-        }
-
-    }
-    private lateinit var backgroundThread: HandlerThread
-    private lateinit var backgroundHandler: Handler
-
-    private val cameraManager by lazy {
-        this.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-    }
-
-    private fun previewSession() {
-        val surface = previewView.holder.surface
-
-        captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-        captureRequestBuilder.addTarget(surface)
-
-        cameraDevice.createCaptureSession(
-            listOf(surface),
-            object: CameraCaptureSession.StateCallback(){
-                override fun onConfigureFailed(session: CameraCaptureSession) {
-                }
-                override fun onConfigured(session: CameraCaptureSession) {
-                    if (session != null) {
-                        captureSession = session
-                        captureRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF)
-                        captureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null)
-                    }
-                }
-            }, null)
-
-    }
-
-    private fun closeCamera() {
-        if (this::captureSession.isInitialized)
-            captureSession.close()
-        if (this::cameraDevice.isInitialized)
-            cameraDevice.close()
-    }
-
-    private fun startBackgroundThread() {
-        backgroundThread = HandlerThread("Camara preview").also { it.start() }
-        backgroundHandler = Handler(backgroundThread.looper)
-    }
-
-    private fun stopBackgroundThread() {
-        backgroundThread.quitSafely()
-        try {
-            backgroundThread.join()
-        } catch (e: InterruptedException) {
-        }
-    }
-
-    private fun <T> cameraCharacteristics(cameraId: String, key: CameraCharacteristics.Key<T>) : T? {
-        val characteristics = cameraManager.getCameraCharacteristics(cameraId)
-        return when (key) {
-            CameraCharacteristics.LENS_FACING -> characteristics.get(key)
-            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP -> characteristics.get(key)
-            else -> throw  IllegalArgumentException("Key not recognized")
-        }
-    }
-
-    private fun cameraId(lens: Int) : String {
-        var deviceId = listOf<String>()
-        try {
-            val cameraIdList = cameraManager.cameraIdList
-            deviceId = cameraIdList.filter { lens == cameraCharacteristics(it, CameraCharacteristics.LENS_FACING) }
-        } catch (e: CameraAccessException) {
-        }
-        return deviceId[0]
-    }
-
-    private fun connectCamera() {
-        val deviceId = cameraId(if(ExecutionData.camera == 0) CameraCharacteristics.LENS_FACING_BACK else CameraCharacteristics.LENS_FACING_FRONT)
-        try {
-            cameraManager.openCamera(deviceId, deviceStateCallback, backgroundHandler)
-        } catch (e: CameraAccessException) {
-        } catch (e: InterruptedException) {
-        }
-    }
+    private lateinit var player: SimpleExoPlayer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stream)
 
-        //val progressBarView: View = layoutInflater.inflate(R.layout.progress_bar, null)
-        //streamActivity.addView(progressBarView)
+        val progressBarView: View = layoutInflater.inflate(R.layout.progress_bar, null)
+        streamActivity.addView(progressBarView)
 
         viewModel = ViewModelProvider(
             this,
@@ -133,7 +48,7 @@ class StreamActivity : AppCompatActivity() {
 
         viewModel.isFullscreen.observe(this, Observer {isFullscreen: Boolean ->
             if(isFullscreen){
-                val params: ConstraintLayout.LayoutParams = previewView.layoutParams as ConstraintLayout.LayoutParams
+                val params: ConstraintLayout.LayoutParams = playerView.layoutParams as ConstraintLayout.LayoutParams
                 params.height = ConstraintLayout.LayoutParams.MATCH_PARENT
                 params.topToBottom = ConstraintLayout.LayoutParams.UNSET
                 params.bottomToTop = ConstraintLayout.LayoutParams.UNSET
@@ -143,7 +58,7 @@ class StreamActivity : AppCompatActivity() {
                 params.marginStart = 0
                 params.topMargin = 0
                 params.bottomMargin = 0
-                previewView.requestLayout()
+                playerView.requestLayout()
 
                 window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
                 window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
@@ -152,7 +67,7 @@ class StreamActivity : AppCompatActivity() {
                 stopStreamingButton.visibility = View.GONE
                 updateTextList.visibility = View.GONE
             }else{
-                val params: ConstraintLayout.LayoutParams = previewView.layoutParams as ConstraintLayout.LayoutParams
+                val params: ConstraintLayout.LayoutParams = playerView.layoutParams as ConstraintLayout.LayoutParams
                 params.height = ConstraintLayout.LayoutParams.MATCH_CONSTRAINT
                 params.topToTop = ConstraintLayout.LayoutParams.UNSET
                 params.bottomToBottom = ConstraintLayout.LayoutParams.UNSET
@@ -162,7 +77,7 @@ class StreamActivity : AppCompatActivity() {
                 params.marginStart = 16
                 params.topMargin = 16
                 params.bottomMargin = 16
-                previewView.requestLayout()
+                playerView.requestLayout()
                 window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
                 window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
                 window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
@@ -193,33 +108,50 @@ class StreamActivity : AppCompatActivity() {
             finish()
         }
 
-        ExecutionData.isStarted.observe(this, Observer {
-            if(it){
-                startBackgroundThread()
-                if(previewView.holder.surface != null){
-                    connectCamera()
-                }else{
-                    previewView.holder.addCallback(object: SurfaceHolder.Callback{
-                        override fun surfaceChanged(
-                            holder: SurfaceHolder?,
-                            format: Int,
-                            width: Int,
-                            height: Int
-                        ) {}
-                        override fun surfaceDestroyed(holder: SurfaceHolder?) {}
-                        override fun surfaceCreated(holder: SurfaceHolder?) {
-                            connectCamera()
-                        }
-                    })
+        val trackSelector = DefaultTrackSelector(this, AdaptiveTrackSelection.Factory());
+        val loadControlBuilder: DefaultLoadControl.Builder = DefaultLoadControl.Builder()
+        loadControlBuilder.setBufferDurationsMs(100, DefaultLoadControl.DEFAULT_MAX_BUFFER_MS, 100, 100)
+        val simpleExoPlayerBuilder: SimpleExoPlayer.Builder = SimpleExoPlayer.Builder(this)
+        simpleExoPlayerBuilder.setTrackSelector(trackSelector)
+        simpleExoPlayerBuilder.setLoadControl(loadControlBuilder.createDefaultLoadControl())
+
+        player = simpleExoPlayerBuilder.build()
+
+        playerView.player = player
+        playerView.requestFocus()
+        val factory: DataSource.Factory = DataSource.Factory{ UdpDataSource(3000, 100000) }
+        val tsExtractorFactory = ExtractorsFactory {
+            arrayOf<TsExtractor>(
+                TsExtractor(
+                    TsExtractor.MODE_SINGLE_PMT,
+                    TimestampAdjuster(0), DefaultTsPayloadReaderFactory()
+                )
+            )
+        }
+        val mediaSource: MediaSource = ProgressiveMediaSource.Factory(factory, tsExtractorFactory).createMediaSource(Uri.parse("udp://127.0.0.1:1234"))
+        player.prepare(mediaSource)
+        player.playWhenReady = true
+
+        player.addListener(object: Player.EventListener {
+            override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+                super.onPlayerStateChanged(playWhenReady, playbackState)
+
+                if(playbackState == STATE_READY){
+                    playerView.visibility = View.VISIBLE
+                    streamActivity.removeView(progressBarView)
                 }
             }
         })
+
+        playerView.videoSurfaceView?.setOnClickListener{
+            viewModel.setIsFullscreen(true)
+        }
+
     }
 
     override fun onDestroy() {
-        closeCamera()
-        stopBackgroundThread()
         super.onDestroy()
+        releasePlayer()
     }
 
     override fun onBackPressed() {
@@ -231,10 +163,9 @@ class StreamActivity : AppCompatActivity() {
         }
     }
 
-    override fun onPause() {
-        closeCamera()
-        stopBackgroundThread()
-        super.onPause()
+    private fun releasePlayer(){
+        player.playWhenReady = false
+        player.stop()
+        player.release()
     }
-
 }

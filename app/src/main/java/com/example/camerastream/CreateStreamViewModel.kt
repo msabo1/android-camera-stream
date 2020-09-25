@@ -11,7 +11,7 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
     private val streamUrlMutable: MutableLiveData<String> = MutableLiveData<String>()
     val streamUrl: LiveData<String>
         get() = streamUrlMutable
-    var camera: Int = 0
+    var camera: Int? = 0
 
     fun changeStreamUrl(url: String){
         streamUrlMutable.value = url;
@@ -25,13 +25,6 @@ class CreateStreamViewModel(application: Application): AndroidViewModel(applicat
     fun startStream(){
         ExecutionData.setIsTerminated(false);
         createTextFiles()
-        ExecutionData.setIsStarted(false)
-        Config.enableStatisticsCallback {
-            if((ExecutionData.isStarted.value == null || !ExecutionData.isStarted.value!!) && it.time > 0){
-                ExecutionData.postIsStarted(true)
-            }
-        }
-        ExecutionData.camera = camera
         ExecutionData.executionId = FFmpeg.executeAsync(generateFFmpegCommand()) { executionId, rc ->
             if (rc == Config.RETURN_CODE_SUCCESS) {
                 Log.i(Config.TAG, "Async command execution completed successfully.")

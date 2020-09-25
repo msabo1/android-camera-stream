@@ -46,13 +46,13 @@ class MainActivity : AppCompatActivity() {
 
         frontCameraRadioButton.setOnCheckedChangeListener { buttonView, isChecked ->
             if(isChecked){
-                viewModel.camera = cameraIdMap[frontCameraRadioButton.id]!!
+                viewModel.camera = cameraIdMap[frontCameraRadioButton.id]
                 backCameraRadioButton.isChecked = false
             }
         }
         backCameraRadioButton.setOnCheckedChangeListener { buttonView, isChecked ->
             if(isChecked){
-                viewModel.camera = cameraIdMap[backCameraRadioButton.id]!!
+                viewModel.camera = cameraIdMap[backCameraRadioButton.id]
                 frontCameraRadioButton.isChecked = false
             }
         }
